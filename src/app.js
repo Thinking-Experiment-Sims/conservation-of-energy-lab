@@ -599,11 +599,13 @@ function initVirtualTab() {
   hTopSlider.addEventListener('input', () => {
     state.virtual.hTop = parseFloat(hTopSlider.value);
     syncSimParams();
+    sim.reset();
   });
 
   hBotSlider.addEventListener('input', () => {
     state.virtual.hBottom = parseFloat(hBotSlider.value);
     syncSimParams();
+    sim.reset();
   });
 
   massInp.addEventListener('input', () => {
