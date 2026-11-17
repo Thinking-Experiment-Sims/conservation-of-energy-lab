@@ -44,6 +44,63 @@
          ======================================================= -->
     <section role="tabpanel" id="panel-recorder" aria-labelledby="tab-recorder" tabindex="0">
       <div class="panel-inner">
+        <!-- Hardware Photogate Connection -->
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <h2 class="card-title">0. Connect Physical Photogate (Optional Hardware Mode)</h2>
+              <p class="card-subtitle">Pair a Vernier Go Direct Photogate (Bluetooth/USB) or USB Serial photogate to capture Δt directly into your lab table.</p>
+            </div>
+            <div class="hw-status-pill" id="hw-status-pill" data-state="disconnected">
+              <span>●</span>
+              <span id="hw-status-text">DISCONNECTED · Click Connect to pair</span>
+            </div>
+          </div>
+
+          <div class="hw-connect-strip">
+            <div class="hw-btn-group">
+              <button type="button" id="hw-btn-ble" class="btn btn-primary btn-sm">Connect Vernier Photogate (Bluetooth)</button>
+              <button type="button" id="hw-btn-usb" class="btn btn-teal btn-sm">Connect USB (WebHID)</button>
+              <button type="button" id="hw-btn-serial" class="btn btn-outline btn-sm">USB Serial (Arduino / DIY)</button>
+              <button type="button" id="hw-btn-disconnect" class="btn btn-outline btn-sm" hidden>Disconnect</button>
+            </div>
+            <button type="button" id="hw-btn-test" class="btn btn-outline btn-sm">Simulate Beam Pulse</button>
+          </div>
+
+          <div class="hw-capture-bar">
+            <div class="hw-live-metrics">
+              <span class="beam-pill" id="hw-beam1-pill" data-blocked="false">Gate 1: UNBLOCKED</span>
+              <div class="hw-metric-item">
+                <span class="hw-metric-label">Last Block Δt</span>
+                <span class="hw-metric-val" id="hw-last-dt">— s</span>
+              </div>
+              <div class="hw-metric-item">
+                <span class="hw-metric-label">Speed (v = d / Δt)</span>
+                <span class="hw-metric-val" id="hw-last-v">— m/s</span>
+              </div>
+              <div class="hw-metric-item">
+                <span class="hw-metric-label">Clock Source</span>
+                <span class="hw-metric-val" id="hw-clock-src" style="font-size:0.86rem;color:var(--text-muted);">—</span>
+              </div>
+            </div>
+
+            <div class="hw-apply-group">
+              <label class="checkbox-inline">
+                <input type="checkbox" id="hw-auto-record" checked>
+                <span>Auto-Record Next Pass</span>
+              </label>
+              <select id="hw-target-point" aria-label="Target point for photogate capture">
+                <option value="A">Point A</option>
+                <option value="B">Point B</option>
+                <option value="C">Point C</option>
+                <option value="D">Point D</option>
+                <option value="E">Point E</option>
+              </select>
+              <button type="button" id="hw-apply-btn" class="btn btn-teal btn-sm" disabled>Apply Δt to Point A</button>
+            </div>
+          </div>
+        </div>
+
         <!-- Setup Parameters -->
         <div class="card">
           <div class="card-header">
@@ -458,6 +515,7 @@
     <span>Built for <strong>The Thinking Experiment</strong> · <a href="https://thinking-experiment-sims.github.io/interactive-physics/" target="_blank" rel="noopener">Return to Simulation Hub</a></span>
   </footer>
 
+  <script src="godirect.min.umd.js"></script>
   <script type="module" src="src/app.js"></script>
 </body>
 </html>

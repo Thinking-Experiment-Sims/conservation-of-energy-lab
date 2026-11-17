@@ -1,6 +1,7 @@
 import { POINT_LABELS, computeTrialMetrics, fmt } from './physics.js';
 import { renderLinearizationGraph } from './graph.js';
 import { PendulumSimulation } from './pendulum-sim.js';
+import { PhotogateHardware } from './photogate-hw.js';
 
 function createEmptyRows() {
   return POINT_LABELS.map((label) => ({
@@ -397,7 +398,114 @@ function initRecorderTab() {
 
   document.getElementById('rec-csv-btn').addEventListener('click', () => exportCSV(state.recorder, 'physical-lab-data.csv'));
 
+  initHardwarePhotogate(update);
   update();
+}
+
+function initHardwarePhotogate(updateRecorder) {
+  const statusPill = document.getElementById('hw-status-pill');
+  const statusText = document.getElementById('hw-status-text');
+  const btnBle = document.getElementById('hw-btn-ble');
+  const btnUsb = document.getElementById('hw-btn-usb');
+  const btnSerial = document.getElementById('hw-btn-serial');
+  const btnDisconnect = document.getElementById('hw-btn-disconnect');
+  const btnTest = document.getElementById('hw-btn-test');
+
+  const beam1Pill = document.getElementById('hw-beam1-pill');
+  const lastDtEl = document.getElementById('hw-last-dt');
+  const lastVEl = document.getElementById('hw-last-v');
+  const clockSrcEl = document.getElementById('hw-clock-src');
+  const autoRecordChk = document.getElementById('hw-auto-record');
+  const targetSel = document.getElementById('hw-target-point');
+  const applyBtn = document.getElementById('hw-apply-btn');
+
+  let lastDurationSec = null;
+
+  function applyDurationToPoint(durationSec) {
+    const idx = POINT_LABELS.indexOf(targetSel.value);
+    if (idx < 0 || !Number.isFinite(durationSec) || durationSec <= 0) return;
+
+    const dtRounded = Number(durationSec.toFixed(5));
+    state.recorder.rows[idx].deltaT = dtRounded;
+    state.recorder.rows[idx].vBottom = state.recorder.diameterM / dtRounded;
+    updateRecorder();
+    syncEditableInputs('rec', state.recorder);
+
+    const nextIdx = (idx + 1) % POINT_LABELS.length;
+    targetSel.value = POINT_LABELS[nextIdx];
+    applyBtn.textContent = `Apply Δt to Point ${POINT_LABELS[nextIdx]}`;
+  }
+
+  const hw = new PhotogateHardware({
+    onConnection: (connState, message) => {
+      statusPill.dataset.state = connState;
+      statusText.textContent = message;
+      const isConn = connState === 'connected';
+      btnBle.hidden = isConn;
+      btnUsb.hidden = isConn;
+      btnSerial.hidden = isConn;
+      btnDisconnect.hidden = !isConn;
+    },
+    onBeamState: (beamNum, isBlocked) => {
+      if (beamNum !== 1) return;
+      beam1Pill.dataset.blocked = String(isBlocked);
+      beam1Pill.textContent = isBlocked ? 'Gate 1: BLOCKED' : 'Gate 1: UNBLOCKED';
+    },
+    onGateDuration: (_beamNum, durationSec, source) => {
+      lastDurationSec = durationSec;
+      const v = state.recorder.diameterM / durationSec;
+      lastDtEl.textContent = `${durationSec.toFixed(5)} s`;
+      lastVEl.textContent = `${fmt(v, 3)} m/s`;
+      clockSrcEl.textContent = source;
+      applyBtn.disabled = false;
+
+      if (autoRecordChk.checked) {
+        applyDurationToPoint(durationSec);
+      }
+    },
+  });
+
+  btnBle.addEventListener('click', async () => {
+    try {
+      await hw.connectVernier(true);
+    } catch (err) {
+      statusPill.dataset.state = 'disconnected';
+      statusText.textContent = `Bluetooth error: ${err.message || err}`;
+    }
+  });
+
+  btnUsb.addEventListener('click', async () => {
+    try {
+      await hw.connectVernier(false);
+    } catch (err) {
+      statusPill.dataset.state = 'disconnected';
+      statusText.textContent = `USB error: ${err.message || err}`;
+    }
+  });
+
+  btnSerial.addEventListener('click', async () => {
+    try {
+      await hw.connectSerial();
+    } catch (err) {
+      statusPill.dataset.state = 'disconnected';
+      statusText.textContent = `Serial error: ${err.message || err}`;
+    }
+  });
+
+  btnDisconnect.addEventListener('click', () => hw.disconnect());
+
+  btnTest.addEventListener('click', () => {
+    hw.onBeamEvent(1, true);
+    setTimeout(() => hw.onBeamEvent(1, false), 14);
+  });
+
+  targetSel.addEventListener('change', () => {
+    applyBtn.textContent = `Apply Δt to Point ${targetSel.value}`;
+  });
+
+  applyBtn.addEventListener('click', () => {
+    if (lastDurationSec !== null) applyDurationToPoint(lastDurationSec);
+  });
 }
 
 /* =========================================================

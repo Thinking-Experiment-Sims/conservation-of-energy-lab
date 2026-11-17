@@ -7,6 +7,7 @@ import {
   stepPendulumRK4,
   simulatePhotogateReading,
 } from '../src/physics.js';
+import { parseVernierEventPacket } from '../src/photogate-hw.js';
 
 test('computeTrialMetrics computes exact conservation of energy values', () => {
   // m = 0.050 kg, g = 9.8 m/s^2, hTop = 0.60 m, hBottom = 0.15 m => dh = 0.45 m
@@ -66,4 +67,21 @@ test('simulatePhotogateReading returns exact d/v when noise is off', () => {
   const { deltaT, measuredV } = simulatePhotogateReading(0.025, 2.5, false);
   assert.ok(Math.abs(deltaT - 0.01) < 1e-12);
   assert.ok(Math.abs(measuredV - 2.5) < 1e-12);
+});
+
+test('parseVernierEventPacket decodes 1 us timestamps from 0x20 packet', () => {
+  const buf = new ArrayBuffer(16);
+  const dv = new DataView(buf);
+  dv.setUint8(0, 0x20);
+  dv.setUint8(4, 0x0b); // int32 subtype
+  dv.setUint8(6, 4); // channel 4 (Gate 1)
+  dv.setUint8(7, 1); // 1 sample
+  dv.setInt32(8, 1, true); // blocked
+  dv.setUint32(12, 1_234_567, true); // 1,234,567 us
+
+  const parsed = parseVernierEventPacket(dv);
+  assert.ok(parsed);
+  assert.equal(parsed.channel, 4);
+  assert.equal(parsed.samples[0].value, 1);
+  assert.equal(parsed.samples[0].tsUs, 1_234_567);
 });
