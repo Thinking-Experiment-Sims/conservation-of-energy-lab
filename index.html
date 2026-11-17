@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="light">
+  <title>Lab: Conservation of Energy — Pendulum &amp; Photogate | The Thinking Experiment</title>
+  <link rel="icon" type="image/png" href="favicon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <div class="brand-group">
+        <span class="brand-eyebrow">The Thinking Experiment · PhysicsKit</span>
+        <h1 class="site-title">Lab: Conservation of Energy (Pendulum &amp; Photogate)</h1>
+        <p class="site-subtitle">Record physical photogate lab data or complete the entire pendulum investigation online, including energy tables and v² vs. Δh linearization.</p>
+      </div>
+      <div class="header-actions">
+        <button type="button" id="print-btn" class="btn btn-outline">Print / Save PDF</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="main-container">
+    <div class="tablist-wrap">
+      <div role="tablist" aria-label="Lab Mode">
+        <button type="button" role="tab" id="tab-recorder" aria-selected="true" tabindex="0">
+          Physical Lab Data Recorder
+          <span class="tab-badge">In-Class Helper</span>
+        </button>
+        <button type="button" role="tab" id="tab-virtual" aria-selected="false" tabindex="-1">
+          Virtual Pendulum Lab
+          <span class="tab-badge">Online Simulation</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- =========================================================
+         TAB 1: PHYSICAL LAB DATA RECORDER
+         ======================================================= -->
+    <section role="tabpanel" id="panel-recorder" aria-labelledby="tab-recorder" tabindex="0">
+      <div class="panel-inner">
+        <!-- Setup Parameters -->
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <h2 class="card-title">1. Apparatus &amp; Photogate Settings</h2>
+              <p class="card-subtitle">Enter your pendulum bob mass and choose how your photogate reports velocity.</p>
+            </div>
+            <div class="sim-controls-row">
+              <button type="button" id="rec-sample-btn" class="btn btn-outline btn-sm">Load Sample Data</button>
+              <button type="button" id="rec-clear-btn" class="btn btn-outline btn-sm">Clear All</button>
+              <button type="button" id="rec-csv-btn" class="btn btn-teal btn-sm">Export CSV</button>
+            </div>
+          </div>
+
+          <div class="params-grid">
+            <div class="field">
+              <label for="rec-mass">Pendulum Bob Mass, m (kg)</label>
+              <input type="number" id="rec-mass" value="0.050" step="0.001" min="0.001">
+              <span class="field-hint">Example: 50 g = 0.050 kg</span>
+            </div>
+
+            <div class="field">
+              <label>Photogate Velocity Mode</label>
+              <div class="radio-group" role="radiogroup" aria-label="Photogate Velocity Mode">
+                <label class="radio-option">
+                  <input type="radio" name="rec-vel-mode" value="photogate" checked>
+                  <span>Time Δt (v = d / Δt)</span>
+                </label>
+                <label class="radio-option">
+                  <input type="radio" name="rec-vel-mode" value="direct">
+                  <span>Direct Velocity (m/s)</span>
+                </label>
+              </div>
+            </div>
+
+            <div class="field" id="rec-diameter-field">
+              <label for="rec-diameter">Bob Diameter, d (cm)</label>
+              <input type="number" id="rec-diameter" value="2.50" step="0.05" min="0.1">
+              <span class="field-hint">Converted to meters for v = d / Δt</span>
+            </div>
+
+            <div class="field">
+              <label for="rec-g">Known Gravity, g (m/s²)</label>
+              <select id="rec-g">
+                <option value="9.8" selected>9.80 m/s²</option>
+                <option value="9.81">9.81 m/s²</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Page 1: Energy Data Table -->
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <h2 class="card-title">2. Lab Report Data Table (Page 1)</h2>
+              <p class="card-subtitle">Enter the Top drop height, Bottom photogate height, and photogate time Δt (or velocity) for Points A–E.</p>
+            </div>
+          </div>
+
+          <div tabindex="0" role="region" aria-labelledby="rec-table1-caption" class="table-wrapper">
+            <table class="lab-table">
+              <caption id="rec-table1-caption" style="position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);">
+                Conservation of Energy Data Table for Physical Lab
+              </caption>
+              <thead>
+                <tr>
+                  <th rowspan="2" scope="col">Point</th>
+                  <th colspan="5" scope="colgroup">Top (Release)</th>
+                  <th colspan="5" scope="colgroup">Bottom (Photogate)</th>
+                  <th scope="col" class="group-compare">Compare</th>
+                </tr>
+                <tr class="subhead">
+                  <th scope="col">Height (m)</th>
+                  <th scope="col">Velocity (m/s)</th>
+                  <th scope="col">PE (J)</th>
+                  <th scope="col">KE (J)</th>
+                  <th scope="col">Total E (J)</th>
+                  <th scope="col">Height (m)</th>
+                  <th scope="col">Photogate / v (m/s)</th>
+                  <th scope="col">PE (J)</th>
+                  <th scope="col">KE (J)</th>
+                  <th scope="col">Total E (J)</th>
+                  <th scope="col" class="group-compare">Δ Total E (J)</th>
+                </tr>
+              </thead>
+              <tbody id="rec-table1-body"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Page 1: Calculations Box -->
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <h2 class="card-title">3. Sample Calculations Helper (Page 1)</h2>
+              <p class="card-subtitle">Inspect the step-by-step substitution for any point to verify your hand calculations.</p>
+            </div>
+            <div class="sim-controls-row">
+              <select id="rec-calc-point" aria-label="Sample calculation point">
+                <option value="A">Point A</option>
+                <option value="B">Point B</option>
+                <option value="C">Point C</option>
+                <option value="D">Point D</option>
+                <option value="E">Point E</option>
+              </select>
+              <select id="rec-calc-pos" aria-label="Sample calculation position">
+                <option value="bottom">Bottom (Photogate)</option>
+                <option value="top">Top (Release)</option>
+              </select>
+            </div>
+          </div>
+          <div id="rec-calc-output" class="calc-grid"></div>
+        </div>
+
+        <!-- Page 2: Linearization -->
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <h2 class="card-title">4. Linearization: v² vs. Δh (Page 2)</h2>
+              <p class="card-subtitle">Since mgΔh = ½mv², plotting v² versus Δh yields a line with theoretical slope 2g ≈ 19.6 m/s².</p>
+            </div>
+          </div>
+
+          <div class="linearization-grid">
+            <div>
+              <div tabindex="0" role="region" aria-label="Linearization data table" class="table-wrapper">
+                <table class="lab-table">
+                  <thead>
+                    <tr>
+                      <th scope="col">Point</th>
+                      <th scope="col">Change in Height Δh (m)</th>
+                      <th scope="col">Velocity Squared v² (m²/s²)</th>
+                    </tr>
+                  </thead>
+                  <tbody id="rec-table2-body"></tbody>
+                </table>
+              </div>
+
+              <div class="lin-stats-grid">
+                <div class="stat-box">
+                  <div class="stat-label">Best-Fit Slope (≈ 2g)</div>
+                  <div class="stat-value accent" id="rec-stat-slope">—</div>
+                </div>
+                <div class="stat-box">
+                  <div class="stat-label">Experimental g (Slope / 2)</div>
+                  <div class="stat-value" id="rec-stat-g">—</div>
+                </div>
+                <div class="stat-box">
+                  <div class="stat-label">Percent Error vs. Known</div>
+                  <div class="stat-value" id="rec-stat-error">—</div>
+                </div>
+                <div class="stat-box">
+                  <div class="stat-label">R² (Linearity)</div>
+                  <div class="stat-value" id="rec-stat-r2">—</div>
+                </div>
+                <div class="stat-box" style="grid-column: 1 / -1;">
+                  <div class="stat-label">y-Intercept</div>
+                  <div class="stat-value" id="rec-stat-intercept">—</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="graph-container">
+              <svg id="rec-graph" class="graph-svg" viewBox="0 0 560 380" role="img" aria-label="Graph of velocity squared versus change in height"></svg>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- =========================================================
+         TAB 2: VIRTUAL PENDULUM LAB (ONLINE SIMULATION)
+         ======================================================= -->
+    <section role="tabpanel" id="panel-virtual" aria-labelledby="tab-virtual" hidden="until-found">
+      <div class="panel-inner">
+        <div class="sim-workspace">
+          <!-- Left: Interactive Canvas -->
+          <div class="canvas-stage">
+            <canvas id="pendulumCanvas" aria-label="Interactive pendulum and photogate simulation"></canvas>
+            <div class="canvas-hint">
+              <span>Tip: Drag the pendulum bob directly or use the sliders to set release height h_top.</span>
+              <span>String Length L = 1.00 m</span>
+            </div>
+          </div>
+
+          <!-- Right: Controls & Photogate Readout -->
+          <div class="sim-sidebar">
+            <!-- Photogate LCD -->
+            <div class="photogate-readout">
+              <div class="readout-header">
+                <span class="readout-title">Photogate Timer</span>
+                <span class="gate-status" id="sim-gate-status" data-state="ready">● READY</span>
+              </div>
+              <div class="readout-metrics">
+                <div class="lcd-cell">
+                  <div class="lcd-label">Time Blocked (Δt)</div>
+                  <div class="lcd-value" id="sim-lcd-dt">— s</div>
+                </div>
+                <div class="lcd-cell">
+                  <div class="lcd-label">Speed (v = d / Δt)</div>
+                  <div class="lcd-value" id="sim-lcd-v">— m/s</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Live Energy Bars -->
+            <div class="card" style="padding: 1rem 1.15rem;">
+              <div class="readout-title" style="margin-bottom: 0.65rem;">Live Mechanical Energy</div>
+              <div class="energy-bars">
+                <div class="energy-row">
+                  <span class="energy-label">PE</span>
+                  <div class="bar-track"><div class="bar-fill bar-pe" id="bar-pe"></div></div>
+                  <span class="energy-val" id="val-pe">0.000 J</span>
+                </div>
+                <div class="energy-row">
+                  <span class="energy-label">KE</span>
+                  <div class="bar-track"><div class="bar-fill bar-ke" id="bar-ke"></div></div>
+                  <span class="energy-val" id="val-ke">0.000 J</span>
+                </div>
+                <div class="energy-row">
+                  <span class="energy-label">Total</span>
+                  <div class="bar-track"><div class="bar-fill bar-te" id="bar-te"></div></div>
+                  <span class="energy-val" id="val-te">0.000 J</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Apparatus Controls -->
+            <div class="card" style="padding: 1rem 1.15rem; display: flex; flex-direction: column; gap: 0.85rem;">
+              <div class="slider-field">
+                <div class="slider-label-row">
+                  <label for="sim-htop">Release Height (h_top)</label>
+                  <span class="slider-val" id="sim-htop-val">0.55 m</span>
+                </div>
+                <input type="range" id="sim-htop" min="0.20" max="1.15" step="0.01" value="0.55">
+              </div>
+
+              <div class="slider-field">
+                <div class="slider-label-row">
+                  <label for="sim-hbot">Photogate Height (h_bottom)</label>
+                  <span class="slider-val" id="sim-hbot-val">0.15 m</span>
+                </div>
+                <input type="range" id="sim-hbot" min="0.05" max="0.40" step="0.01" value="0.15">
+              </div>
+
+              <div class="params-grid" style="grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+                <div class="field">
+                  <label for="sim-mass">Bob Mass (kg)</label>
+                  <input type="number" id="sim-mass" value="0.050" step="0.005" min="0.01">
+                </div>
+                <div class="field">
+                  <label for="sim-diameter">Bob Diameter (cm)</label>
+                  <input type="number" id="sim-diameter" value="2.50" step="0.1" min="0.5">
+                </div>
+              </div>
+
+              <div class="sim-controls-row">
+                <label class="checkbox-inline">
+                  <input type="checkbox" id="sim-slowmo">
+                  <span>Slow Motion (0.25×)</span>
+                </label>
+                <label class="checkbox-inline">
+                  <input type="checkbox" id="sim-noise">
+                  <span>Realistic Lab Noise (±1.2%)</span>
+                </label>
+              </div>
+
+              <div class="sim-controls-row">
+                <button type="button" id="sim-release-btn" class="btn btn-primary" style="flex: 1;">▶ Release Pendulum</button>
+                <button type="button" id="sim-reset-btn" class="btn btn-outline">Reset</button>
+              </div>
+
+              <div class="record-bar">
+                <label for="sim-target-point" style="font-size:0.86rem;font-weight:600;">Target Row:</label>
+                <select id="sim-target-point" aria-label="Select target row to record">
+                  <option value="A">Point A</option>
+                  <option value="B">Point B</option>
+                  <option value="C">Point C</option>
+                  <option value="D">Point D</option>
+                  <option value="E">Point E</option>
+                </select>
+                <button type="button" id="sim-record-btn" class="btn btn-teal" style="flex: 1;" disabled>Record as Point A</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Virtual Lab Page 1 Table -->
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <h2 class="card-title">Virtual Lab Data Table (Page 1)</h2>
+              <p class="card-subtitle">Run 5 different drop heights (Points A–E) and click "Record" after the bob passes through the photogate.</p>
+            </div>
+            <div class="sim-controls-row">
+              <button type="button" id="sim-clear-btn" class="btn btn-outline btn-sm">Clear Table</button>
+              <button type="button" id="sim-csv-btn" class="btn btn-teal btn-sm">Export CSV</button>
+            </div>
+          </div>
+
+          <div tabindex="0" role="region" aria-label="Virtual Lab Conservation of Energy Data Table" class="table-wrapper">
+            <table class="lab-table">
+              <thead>
+                <tr>
+                  <th rowspan="2" scope="col">Point</th>
+                  <th colspan="5" scope="colgroup">Top (Release)</th>
+                  <th colspan="5" scope="colgroup">Bottom (Photogate)</th>
+                  <th scope="col" class="group-compare">Compare</th>
+                </tr>
+                <tr class="subhead">
+                  <th scope="col">Height (m)</th>
+                  <th scope="col">Velocity (m/s)</th>
+                  <th scope="col">PE (J)</th>
+                  <th scope="col">KE (J)</th>
+                  <th scope="col">Total E (J)</th>
+                  <th scope="col">Height (m)</th>
+                  <th scope="col">Velocity (m/s)</th>
+                  <th scope="col">PE (J)</th>
+                  <th scope="col">KE (J)</th>
+                  <th scope="col">Total E (J)</th>
+                  <th scope="col" class="group-compare">Δ Total E (J)</th>
+                </tr>
+              </thead>
+              <tbody id="sim-table1-body"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Virtual Lab Sample Calculations -->
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <h2 class="card-title">Sample Calculations (Page 1)</h2>
+              <p class="card-subtitle">Step-by-step calculation breakdown for your recorded virtual trial.</p>
+            </div>
+            <div class="sim-controls-row">
+              <select id="sim-calc-point" aria-label="Virtual sample calculation point">
+                <option value="A">Point A</option>
+                <option value="B">Point B</option>
+                <option value="C">Point C</option>
+                <option value="D">Point D</option>
+                <option value="E">Point E</option>
+              </select>
+              <select id="sim-calc-pos" aria-label="Virtual sample calculation position">
+                <option value="bottom">Bottom (Photogate)</option>
+                <option value="top">Top (Release)</option>
+              </select>
+            </div>
+          </div>
+          <div id="sim-calc-output" class="calc-grid"></div>
+        </div>
+
+        <!-- Virtual Lab Page 2 Linearization -->
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <h2 class="card-title">Linearization: v² vs. Δh (Page 2)</h2>
+              <p class="card-subtitle">Verify conservation of energy by checking that the slope of v² vs. Δh equals 2g (19.6 m/s²).</p>
+            </div>
+          </div>
+
+          <div class="linearization-grid">
+            <div>
+              <div tabindex="0" role="region" aria-label="Virtual linearization data table" class="table-wrapper">
+                <table class="lab-table">
+                  <thead>
+                    <tr>
+                      <th scope="col">Point</th>
+                      <th scope="col">Change in Height Δh (m)</th>
+                      <th scope="col">Velocity Squared v² (m²/s²)</th>
+                    </tr>
+                  </thead>
+                  <tbody id="sim-table2-body"></tbody>
+                </table>
+              </div>
+
+              <div class="lin-stats-grid">
+                <div class="stat-box">
+                  <div class="stat-label">Best-Fit Slope (≈ 2g)</div>
+                  <div class="stat-value accent" id="sim-stat-slope">—</div>
+                </div>
+                <div class="stat-box">
+                  <div class="stat-label">Experimental g (Slope / 2)</div>
+                  <div class="stat-value" id="sim-stat-g">—</div>
+                </div>
+                <div class="stat-box">
+                  <div class="stat-label">Percent Error vs. Known</div>
+                  <div class="stat-value" id="sim-stat-error">—</div>
+                </div>
+                <div class="stat-box">
+                  <div class="stat-label">R² (Linearity)</div>
+                  <div class="stat-value" id="sim-stat-r2">—</div>
+                </div>
+                <div class="stat-box" style="grid-column: 1 / -1;">
+                  <div class="stat-label">y-Intercept</div>
+                  <div class="stat-value" id="sim-stat-intercept">—</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="graph-container">
+              <svg id="sim-graph" class="graph-svg" viewBox="0 0 560 380" role="img" aria-label="Virtual lab graph of velocity squared versus change in height"></svg>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <span>Built for <strong>The Thinking Experiment</strong> · <a href="https://thinking-experiment-sims.github.io/interactive-physics/" target="_blank" rel="noopener">Return to Simulation Hub</a></span>
+  </footer>
+
+  <script type="module" src="src/app.js"></script>
+</body>
+</html>
